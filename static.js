@@ -8,7 +8,7 @@ var mimeTypes = {
 };
 
 http.createServer(function(request, response) {
-  var lookup = path.basename(decodeURI(request.url)) || 'index.html';
+  var lookup = path.basename(decodeURI(request.url)) || 'index.html',
   f = 'content/' + lookup;
   fs.exists(f, function(exists) {
     if(exists) {
