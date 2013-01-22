@@ -1,9 +1,14 @@
 var http = require('http');
 var path = require('path');
 var fs = require('fs');
+var mimeTypes = {
+  '.js': 'text/javascript',
+  '.html': 'text/html',
+  '.css': 'text/css'
+};
 
 http.createServer(function(request, response) {
-  var lookup = path.basename(decodeURL(request.url)) || 'index.html';
+  var lookup = path.basename(decodeURI(request.url)) || 'index.html';
   f = 'content/' + lookup;
   fs.exists(f, function(exists) {
     if(exists) {
