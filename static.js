@@ -9,17 +9,22 @@ var mimeTypes = {
 
 var cache = {};
 function cacheAndDeliver(f, cb) {
-  if(!cache[f]) {
-    fs.readFile(f, function(err, data) {
-      if(!err) {
-        cache[f] = {content: data};
-      }
-      cb(err, data);
-    });
-    return;
-  }
-  console.log('loading' + f + 'from cache');
-  cb(null, cache[f].content);
+  fs.stat(f, function(err, stats) {
+    var lastChanged = Date.parse(stats.ctime),
+    isUpdated = (cache[f] && lastChanged > cache[f].timestamp);
+    if(!cache[f] || isUpdated) {
+      fs.readFile(f, function(err, data) {
+      console.log('loading' + f + 'from file');
+        if(!err) {
+          cache[f] = {content: data};
+        }
+        cb(err, data);
+      });
+      return;
+    }
+    console.log('loading' + f + 'from cache');
+    cb(null, cache[f].content);
+  });
 }
 
 http.createServer(function(request, response) {
