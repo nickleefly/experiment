@@ -49,3 +49,4 @@ http.createServer(function(request, response) {
     response.end('Page Not Found!');
   });
 }).listen(8080);
+console.log('server running on port 8080');
