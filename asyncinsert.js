@@ -18,7 +18,6 @@ var insertAll = function(coll, callback) {
     insertElement(elem, function(err, elem) {
       if (err) { throw err; }
       console.log(elem + ' inserted');
-      //setTimeout(iterate, 0)
       process.nextTick(iterate);
     });
   })();
