@@ -1,18 +1,27 @@
 var async = require('async');
 
+function fun(callback) {
+  var args = Array.prototype.slice.call(arguments);
+  args.shift();
+  args.unshift(null);
+  setTimeout(function() {
+    callback.apply({}, args);
+  }, Math.random() * 2000);
+}
+
 async.waterfall([
   function(callback) {
-    callback(null, 1,2,3);
+    fun(callback, 1,2,3);
   },
 
   function(a,b,c, callback) {
     console.log('%s, %s, %s', a, b, c);
-    callback(null, 4,5);
+    fun(callback, 4,5);
   },
 
   function(a,b, callback) {
     console.log('%s, %s', a, b);
-    callback(null, 6,7);
+    fun(callback, 6,7);
   }
 ], function(err, result) {
   if(err) { return console.error(err);}
