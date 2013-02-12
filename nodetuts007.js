@@ -5,10 +5,10 @@ function insert(obj, callback) {
     //var error = Math.random() > 0.5 ? new Error('error!!!'):undefined;
     console.log('inserted');
     callback();
-  }, Math.random() * 3000);
+  }, Math.random() * 1000);
 }
 
-var itemCount = 10;
+var itemCount = 100;
 
 var objects = [];
 for(var i = 0; i < itemCount; i++) {
