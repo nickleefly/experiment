@@ -12,10 +12,13 @@ function insertAll(collection, callback) {
     (function(i){
       insert(collection[i], function() {
         console.log('insert %d is finished', i);
+
+        if(i == collection.length -1) {
+          callback();
+        }
       });
     }(i));
   }
-  callback();
 }
 
 var objs = [1,2,3,4,5,6,7,8,9,10];
