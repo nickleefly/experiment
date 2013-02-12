@@ -15,7 +15,7 @@ function insertAll(collection, callback) {
       insert(collection[i], function() {
         console.log('insert %d is finished', i);
 
-        if(++finished == collection.length) {
+        if(++finished === collection.length) {
           callback();
         }
       });
