@@ -8,12 +8,14 @@ function insert(obj, callback) {
 
 function insertAll(collection, callback) {
 
+  var finished = 0;
+
   for(var i = 0; i < collection.length; i++) {
     (function(i){
       insert(collection[i], function() {
         console.log('insert %d is finished', i);
 
-        if(i == collection.length -1) {
+        if(++finished == collection.length) {
           callback();
         }
       });
