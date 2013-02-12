@@ -15,7 +15,7 @@ for(var i = 0; i < itemCount; i++) {
   objects.push(i);
 }
 
-async.forEachSeries(objects, insert, function(err) {
+async.forEachLimit(objects, 10, insert, function(err) {
   if(err) { return console.error(err);}
   console.log('Finished');
 })
