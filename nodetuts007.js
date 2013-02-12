@@ -1,6 +1,6 @@
 var async = require('async');
 
-function fun(callback) {
+function asyncFun(callback) {
   var args = Array.prototype.slice.call(arguments);
   args.shift();
   args.unshift(null);
@@ -11,17 +11,17 @@ function fun(callback) {
 
 async.waterfall([
   function(callback) {
-    fun(callback, 1,2,3);
+    asyncFun(callback, 1,2,3);
   },
 
   function(a,b,c, callback) {
     console.log('%s, %s, %s', a, b, c);
-    fun(callback, 4,5);
+    asyncFun(callback, 4,5);
   },
 
   function(a,b, callback) {
     console.log('%s, %s', a, b);
-    fun(callback, 6,7);
+    asyncFun(callback, 6,7);
   }
 ], function(err, result) {
   if(err) { return console.error(err);}
