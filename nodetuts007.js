@@ -1,24 +1,18 @@
 var async = require('async');
 
-function insert(obj, callback) {
+function retrieve(id, callback) {
   setTimeout(function() {
     // var error = Math.random() > 0.5 ? new Error('error!!!'):undefined;
-    console.log('inserted');
-    callback(null, obj);
+    callback(null, {
+      id: id,
+      value: Math.round(Math.random() * 1000)
+    });
   }, Math.random() * 1000);
 }
 
-async.series([
-  function(callback) {
-    insert(1, callback);
-  },
-  function(callback) {
-    insert(2, callback);
-  },
-  function(callback) {
-    insert(3, callback);
-  }],function(err, results) {
-    if(err) { return console.error(err);}
-    console.log('Finished results %j', results);
-  }
-)
+var objects = [1,2,3,4];
+
+async.map(objects, retrieve, function(err, results) {
+  if(err) { return console.error(err);}
+  console.log('Finished results %j', results);
+});
