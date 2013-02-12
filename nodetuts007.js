@@ -9,7 +9,7 @@ function filter(obj, callback) {
 
 var objects = [1,2,3,4];
 
-async.reject(objects, filter, function(err, results) {
+async.rejectSeries(objects, filter, function(err, results) {
   if(err) { return console.error(err);}
   console.log('Finished results %j', results);
 });
