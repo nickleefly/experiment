@@ -4,7 +4,7 @@ function insert(obj, callback) {
   setTimeout(function() {
     // var error = Math.random() > 0.5 ? new Error('error!!!'):undefined;
     console.log('inserted');
-    callback();
+    callback(null, obj);
   }, Math.random() * 1000);
 }
 
@@ -17,8 +17,8 @@ async.series([
   },
   function(callback) {
     insert(3, callback);
-  }],function(err) {
+  }],function(err, results) {
     if(err) { return console.error(err);}
-    console.log('Finished');
+    console.log('Finished results %j', results);
   }
 )
