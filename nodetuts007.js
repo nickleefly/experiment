@@ -1,15 +1,20 @@
 var async = require('async');
 
-function filter(obj, callback) {
-  setTimeout(function() {
-    // var error = Math.random() > 0.5 ? new Error('error!!!'):undefined;
-    callback(obj >=3);
-  }, Math.random() * 1000);
-}
+async.waterfall([
+  function(callback) {
+    callback(null, 1,2,3);
+  },
 
-var objects = [1,2,3,4];
+  function(a,b,c, callback) {
+    console.log('%s, %s, %s', a, b, c);
+    callback(null, 4,5);
+  },
 
-async.rejectSeries(objects, filter, function(err, results) {
+  function(a,b, callback) {
+    console.log('%s, %s', a, b);
+    callback(null, 6,7);
+  }
+], function(err, result) {
   if(err) { return console.error(err);}
-  console.log('Finished results %j', results);
+  console.log('Finished result:', result);
 });
