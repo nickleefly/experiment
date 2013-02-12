@@ -8,7 +8,7 @@ function insert(obj, callback) {
   }, Math.random() * 1000);
 }
 
-async.parallel([
+async.series([
   function(callback) {
     insert(1, callback);
   },
