@@ -1,0 +1,9 @@
+extends layout
+
+block content
+    #toggleViewButton(onclick='toggleView();') users
+    #userList
+    #msgs
+    form(onsubmit='sendMessage();return false;')
+        input(id='msgInput', type='text')
+        #sendButton(onclick='sendMessage();') Send
