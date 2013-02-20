@@ -4,7 +4,7 @@ var qs = require('querystring');
 
 dnode.connect(8090, function(remote) {
     http.createServer(function(req, res) {
-    if(req.url === '/login') {
+    if(req.url.match(/^\/login/)) {
       var param = qs.parse(req.url.split('?')[1]);
       remote.auth(param.user, param.pass, function(err) {
        res.end(err ? err : 'OK!');
