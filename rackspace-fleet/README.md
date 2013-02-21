@@ -41,6 +41,7 @@ and spawn the processes!
 ```
 $ fleet spawn -- node web.js 8085
 $ fleet spawn -- node auth.js 8090
+$ fleet spawn -- node web.js 8086 beepity 8090
 ```
 
 Super great!
