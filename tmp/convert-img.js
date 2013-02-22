@@ -2,8 +2,9 @@ var http = require('http');
 var spawn = require('child_process').spawn;
 
 http.createServer(function(req, res) {
-  var path = __dirname + '/img/' + req.url;
-  var args = [path, '-resize', '100x100!', '-'];
+  var parts = req.url.split('/');
+  var path = __dirname + '/img/' + parts[1];
+  var args = [path, '-resize', parts[2], '-'];
   var convert = spawn('convert', args);
 
   convert.stdout.pipe(res);
