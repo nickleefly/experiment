@@ -2,8 +2,14 @@ var http = require('http');
 var spawn = require('child_process').spawn;
 var config = require('./config');
 var s3 = require('knox');
+var StreamCache = require('stream-cache');
 
+var caches = {};
 http.createServer(function(req, res) {
+  if(caches[req.url]) {
+    caches[req.url].pipe(res);
+    return;
+  }
   var parts = req.url.split('/');
 
   s3.get('/' + parts[1]).on('response', function(s3Res) {
@@ -14,5 +20,9 @@ http.createServer(function(req, res) {
 
     convert.stdout.pipe(res);
     convert.stderr.pipe(process.stderr);
+
+    var cache = new StreamCache();
+    convert.stdout.pipe(cache);
+    caches[req.url] = cache;
   }).end();
-}).listen(8000);
+}).listen(process.env.PORT || 8000);
