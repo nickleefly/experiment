@@ -3,3 +3,4 @@
 * time curl -v "url" > /dev/null
 * heroku apps:create --stack dedar yourapp
 * git push heroku
+* heroku logs
