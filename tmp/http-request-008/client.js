@@ -10,6 +10,8 @@ var options = {
   }
 };
 
+http.globalAgent.maxSockets = 10;
+
 function fireRequest() {
   var client = http.request(options);
 
