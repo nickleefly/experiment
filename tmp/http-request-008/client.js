@@ -2,7 +2,7 @@ var http = require('http');
 var fs = require('fs');
 
 var readStream = fs.createReadStream('./cat.jpg');
-var ws = fs.createWriteStream('./cat_back.jpg');
+var ws = fs.createWriteStream('./cat_copy.jpg');
 
 var options = {
   host: 'localhost',
