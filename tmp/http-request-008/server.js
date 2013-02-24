@@ -1,19 +1,16 @@
 var http = require('http');
+var fs = require('fs');
 
 var concurrentRequests = 0;
 
 http.createServer(function(req, res) {
-  //console.log('concurrent requests: %d', ++concurrentRequests);
+  var ws = fs.createWriteStream('./cat_copy.jpg');
 
   console.log('new request -> ');
   console.log(' url: %s', req.url);
   console.log(' headers: %j', req.headers);
 
-  //req.setEncoding('utf8');
-
-  req.on('data', function(data) {
-    console.log(' data: %s', data); 
-  });
+  req.pipe(ws);
 
   req.on('end', function() {
     res.end('Hello');
