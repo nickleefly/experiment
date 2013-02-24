@@ -9,13 +9,13 @@ var options = {
   }
 };
 
-var client = http.request(options);
+var req = http.request(options);
 
-client.on('response', function(res) {
+req.on('response', function(res) {
 console.log('status code: %d', res.statusCode);
 console.log('response headers: %j', res.headers);
 });
 
-client.write('body part 1');
-client.write('body part 2');
-client.end('body part 3');
+req.write('body part 1');
+req.write('body part 2');
+req.end('body part 3');
