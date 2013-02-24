@@ -1,4 +1,7 @@
 var http = require('http');
+var fs = require('fs');
+
+var readStream = fs.createReadStream('./cat.jpg');
 
 var options = {
   host: 'localhost',
@@ -16,6 +19,4 @@ console.log('status code: %d', res.statusCode);
 console.log('response headers: %j', res.headers);
 });
 
-req.write('body part 1');
-req.write('body part 2');
-req.end('body part 3');
+readStream.pipe(req);
