@@ -18,6 +18,11 @@ var PostSchema = new Schema({
   comments: [CommentSchema]
 });
 
+PostSchema.static('recent', function(days, callback) {
+  days = days || 1;
+  this.find({date: {$gte: Date.now() - 1000 * 60 * 60 * 24 * days}}, callback);
+});
+
 mongoose.connect('mongodb://localhost/test');
 mongoose.model('Post', PostSchema);
 
@@ -35,7 +40,7 @@ post.save(function(err) {
   if (err) {throw err;}
   console.log('saved');
   console.log('going to find');
-  Post.find({}, function(err, posts) {
+  Post.recent(10, function(err, posts) {
     if (err) { throw err;}
     console.log('found');
     posts.forEach(function(data) {
