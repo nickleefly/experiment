@@ -4,7 +4,8 @@ var mongoose = require('mongoose');
 var PostSchema = new Schema({
   title: String,
   body: String,
-  date: {type: Date, default: Date.now()}
+  date: {type: Date, default: Date.now()},
+  state: {type: String, enum: ['draft', 'published', 'private'], default: 'draft'}
 });
 
 mongoose.connect('mongodb://localhost/test');
