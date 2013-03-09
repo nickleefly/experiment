@@ -16,6 +16,7 @@ var Post = mongoose.model('Post');
 var post = new Post();
 post.title = 'My first blog post';
 post.body = 'Post body';
+post.state = 'published';
 //post.date = Date.now();
 
 post.save(function(err) {
