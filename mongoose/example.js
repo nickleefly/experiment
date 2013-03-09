@@ -34,5 +34,13 @@ post.comments.push({email:'a@b.com', body: 'beep boop'});
 post.save(function(err) {
   if (err) {throw err;}
   console.log('saved');
-  mongoose.disconnect();
+  console.log('going to find');
+  Post.find({}, function(err, posts) {
+    if (err) { throw err;}
+    console.log('found');
+    posts.forEach(function(data) {
+      console.log(data);
+      mongoose.disconnect();
+    });
+  });
 })
