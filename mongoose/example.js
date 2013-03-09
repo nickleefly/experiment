@@ -23,6 +23,10 @@ PostSchema.static('recent', function(days, callback) {
   this.find({date: {$gte: Date.now() - 1000 * 60 * 60 * 24 * days}}, callback);
 });
 
+PostSchema.virtual('shortBody').get(function() {
+  return this.body.substring(0, 30);
+});
+
 mongoose.connect('mongodb://localhost/test');
 mongoose.model('Post', PostSchema);
 
@@ -30,7 +34,7 @@ var Post = mongoose.model('Post');
 
 var post = new Post();
 post.title = 'My first blog post';
-post.body = 'Post body';
+post.body = 'Post body aslkjfa lkajsdfo  lkjsadfljk ;lkjaswf ;lkjaf;lj ;lkjasd ;kj adfkj  ni the brown fox jumps over the green chickenaslkdjf lakjsdf ';
 post.state = 'published';
 //post.date = Date.now();
 post.author = {name: 'Nick', email: 'nickleefly@hotmail.com'};
@@ -44,7 +48,7 @@ post.save(function(err) {
     if (err) { throw err;}
     console.log('found');
     posts.forEach(function(data) {
-      console.log(data);
+      console.log(data.shortBody);
       mongoose.disconnect();
     });
   });
