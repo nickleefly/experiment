@@ -1,4 +1,5 @@
 var net = require('net');
+var count = 0;
 
 var server = net.createServer(function (conn) {
   conn.write(
