@@ -15,6 +15,10 @@ app.get("/about", function(request, response) {
   response.end("Welcome to the about page!");
 });
 
+app.get("/hello/:who", function(req, res) {
+  res.end("Hello, " + req.params.who + ".");
+});
+
 app.get("*", function(request, response) {
   response.end("404!");
 });
