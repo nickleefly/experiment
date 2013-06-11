@@ -1,0 +1,10 @@
+{
+  "name": "i_love_anime",
+  "version": "0.1.0",
+  "author": "Nick Li",
+  "license": "MIT",
+  "dependencies": {
+    "express": "3.2.6",
+    "jade": "*"
+  }
+}
