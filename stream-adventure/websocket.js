@@ -1,3 +1,3 @@
 var ws = require('websocket-stream')
-var stram = ws('ws://localhost:8000')
+var stream = ws('ws://localhost:8000')
 stream.end('hello\n')
