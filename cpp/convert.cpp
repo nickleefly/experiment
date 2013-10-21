@@ -20,4 +20,6 @@ int main()
     data[i] = i;
   sum(accum, N, data);
   cout << "sum is " << accum << endl;
+  cout << "sum hex is " << hex << accum << endl;
+  cout << "sum address is " << &accum << endl;
 }
