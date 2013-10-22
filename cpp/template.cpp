@@ -2,18 +2,10 @@
 using namespace std;
 
 template <typename summable>
-summable sum (summable data[], int size, summable s) {
+summable sum (summable data[], int size, summable s = 0) {
   for (int i = 0; i < size; ++i)
     s+= data[i];
   return s;
-}
-
-template<typename summable>
-summable sum (summable data[], int size) {
-    int s = 0;
-    for (int i = 0; i < size; ++i)
-        s+= data[i];
-    return s;
 }
 
 int main (int argc, char **argv){
