@@ -18,12 +18,26 @@ class Inc {
 
         Inc operator ++ () {
             // Operator Function Definition
+            // for prefix
             return Inc(++count);
+        }
+
+        Inc operator ++ (int) {
+            // Operator Function Definition
+            // with dummy argument for postfix
+            return Inc(count++);
         }
 
         Inc operator -- () {
             // Operator Function Definition
+            // for prefix
             return Inc(--count);
+        }
+
+        Inc operator -- (int) {
+            // Operator Function Definition
+            // with dummy argument for postfix
+            return Inc(count--);
         }
 
         void display(void) {
@@ -31,7 +45,7 @@ class Inc {
         }
 };
 
-int main(void) {
+int main() {
     Inc a, b(4), c, d, e(1), f(4);
 
     cout << "Before using the operator ++()\n";
@@ -72,4 +86,6 @@ int main(void) {
     e.display();
     cout << "f = ";
     f.display();
+
+    return 0;
 }
