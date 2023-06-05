@@ -65,14 +65,14 @@ def fetch_all_futures(symbols, bond_note_symbols, start_date, end_date):
                 for i in range(len(ohlc_values))
             }
             futures[symbol][date] = {
-                # "Open": ohlc_values[0],
-                # "High": ohlc_values[1],
-                # "Low": ohlc_values[2],
-                # "Close": ohlc_values[3],
+                "Open": ohlc_values[0],
+                "High": ohlc_values[1],
+                "Low": ohlc_values[2],
+                "Close": ohlc_values[3],
                 "PivotHigh": PivotHigh,
                 "PMA": PMA,
                 "PivotLow": PivotLow,
-                "range": PR,
+                "range": round(PR, 2),
                 "RES 1": R1,
                 "SUP 1": S1,
                 "RES 2": R2,
@@ -97,7 +97,7 @@ def convert_bond_note(num):
 
 
 today = datetime.date.today().strftime("%Y-%m-%d")
-start_date = "2023-05-31"
+start_date = "2023-06-02"
 end_date = today
 symbols = [
     'ES=F', 'NQ=F', 'RTY=F', 'YM=F', 'ZB=F', 'ZN=F', 'ZF=F', 'ZT=F', 'CL=F',
@@ -124,8 +124,27 @@ else:
 def print_dict(dictionary):
     for key, value in dictionary.items():
         for vi, vv in value.items():
-            print(key, vi, vv)
-        print("\n")
+            # print(key, vi, vv)
+            print('{:^15} {:^15} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10}'.format(
+                key,
+                vi,
+                vv['Open'],
+                vv['High'],
+                vv['Low'],
+                vv['Close'],
+                vv['PivotHigh'],
+                vv['PMA'],
+                vv['PivotLow'],
+                vv['RES 1'],
+                vv['SUP 1'],
+                vv['RES 2'],
+                vv['SUP 2'],
+                vv['RES 3'],
+                vv['SUP 3']
+            ))
 
 
+print('{:^15} {:^15} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10}'.format(
+    'Symbol', 'Date', 'Open', 'High', 'Low', 'Close', 'PivotHigh', 'Pivot',
+    'PivotLow', 'RES 1', 'SUP 1', 'RES 2', 'SUP 2', 'RES 3', 'SUP 3'))
 print_dict(futures)

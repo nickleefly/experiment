@@ -101,7 +101,7 @@ def convert_bond_note(num):
     return data.split(".")[0]
 
 
-start_date = "2023-05-31"
+start_date = "2023-06-02"
 end_date = datetime.date.today().strftime("%Y-%m-%d")
 symbols = [
     'ES=F', 'NQ=F', 'RTY=F', 'YM=F', 'ZB=F', 'ZN=F', 'ZF=F', 'ZT=F', 'CL=F',
@@ -115,7 +115,6 @@ futures = fetch_all_futures(symbols, start_date, end_date, bond_note_symbols)
 
 
 def print_dict(dictionary):
-    print("we are here")
     for key, value in dictionary.items():
         for vi, vv in value.items():
             print(key, vi, vv)
