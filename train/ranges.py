@@ -49,6 +49,11 @@ def fetch_all_futures(symbols, bond_note_symbols, start_date, end_date):
                     [convert_bond_note(val) for val in [
                         PMA, PivotHigh, PivotLow, R1, S1, R2, S2, R3, S3]]
             # Otherwise, round the values to two decimal places
+            elif (symbol == 'EURUSD=X'):
+                ohlc_values = [round(val, 5) for val in ohlc_values]
+                PMA, PivotHigh, PivotLow, R1, S1, R2, S2, R3, S3 = \
+                    [round(val, 5) for val in [PMA, PivotHigh,
+                                               PivotLow, R1, S1, R2, S2, R3, S3]]
             else:
                 ohlc_values = [round(val, 2) for val in ohlc_values]
                 PMA, PivotHigh, PivotLow, R1, S1, R2, S2, R3, S3 = \
@@ -96,32 +101,46 @@ def convert_bond_note(num):
     return data.split(".")[0]
 
 
-today = datetime.date.today().strftime("%Y-%m-%d")
-start_date = "2023-06-02"
-end_date = today
-symbols = [
-    'ES=F', 'NQ=F', 'RTY=F', 'YM=F', 'ZB=F', 'ZN=F', 'ZF=F', 'ZT=F', 'CL=F',
-    'GC=F', 'SI=F', 'SPY', 'QQQ', 'IWM', 'USO', 'TLT', 'IEF', 'GLD', '^VIX',
-    'BTC-USD', 'USDJPY=X', 'EURUSD=X', 'AAPL', 'NFLX', 'TSLA', 'JPM', '^GDAXI'
-]
+def get_data(start_date, today):
+    end_date = today
+    symbols = [
+        'ES=F', 'NQ=F', 'RTY=F', 'YM=F', 'ZB=F', 'ZN=F', 'ZF=F', 'ZT=F', 'CL=F',
+        'GC=F', 'SI=F', 'SPY', 'QQQ', 'IWM', 'USO', 'TLT', 'IEF', 'GLD', '^VIX',
+        'BTC-USD', 'USDJPY=X', 'EURUSD=X', 'AAPL', 'NFLX', 'TSLA', 'JPM', '^GDAXI'
+    ]
 
-bond_note_symbols = ['ZB=F', 'ZN=F', 'ZF=F', 'ZT=F']
+    bond_note_symbols = ['ZB=F', 'ZN=F', 'ZF=F', 'ZT=F']
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--start_date', type=str)
-parser.add_argument('--end_date', type=str)
-args = parser.parse_args()
-if args.start_date and args.end_date:
-    futures = fetch_all_futures(symbols,
-                                bond_note_symbols,
-                                start_date=args.start_date,
-                                end_date=args.end_date)
-else:
-    futures = fetch_all_futures(symbols, bond_note_symbols, str(start_date),
-                                str(end_date))
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--start_date', type=str)
+    parser.add_argument('--end_date', type=str)
+    args = parser.parse_args()
+    if args.start_date and args.end_date:
+        futures = fetch_all_futures(symbols,
+                                    bond_note_symbols,
+                                    start_date=args.start_date,
+                                    end_date=args.end_date)
+    else:
+        futures = fetch_all_futures(symbols, bond_note_symbols, str(start_date),
+                                    str(end_date))
+    return futures
+
+
+class bcolors:
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    OKRED = '\033[91m'
+    ENDC = '\033[0m'
 
 
 def print_dict(dictionary):
+    print('{:^15} {:^15} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10}'.format(
+        'Symbol', 'Date', 'Open', 'High', 'Low', 'Close', 'PivotHigh', 'Pivot',
+        'PivotLow',
+        'RES 1', 'SUP 1',
+        'RES 2', 'SUP 2',
+        'RES 3', 'SUP 3'))
     for key, value in dictionary.items():
         for vi, vv in value.items():
             # print(key, vi, vv)
@@ -144,7 +163,7 @@ def print_dict(dictionary):
             ))
 
 
-print('{:^15} {:^15} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10}'.format(
-    'Symbol', 'Date', 'Open', 'High', 'Low', 'Close', 'PivotHigh', 'Pivot',
-    'PivotLow', 'RES 1', 'SUP 1', 'RES 2', 'SUP 2', 'RES 3', 'SUP 3'))
+today = datetime.date.today().strftime("%Y-%m-%d")
+start_date = "2023-06-02"
+futures = get_data(start_date, today)
 print_dict(futures)
