@@ -1,7 +1,6 @@
 import yfinance as yf
 from datetime import datetime, timedelta
 import numpy as np
-import argparse
 import pytz
 
 
