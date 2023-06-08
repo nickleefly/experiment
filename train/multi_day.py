@@ -101,7 +101,7 @@ def convert_bond_note(num):
     return data.split(".")[0]
 
 
-start_date = "2023-06-05"
+start_date = "2023-06-06"
 end_date = datetime.date.today().strftime("%Y-%m-%d")
 symbols = [
     'ES=F', 'NQ=F', 'RTY=F', 'YM=F', 'ZB=F', 'ZN=F', 'ZF=F', 'ZT=F', 'CL=F',
