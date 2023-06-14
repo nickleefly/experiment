@@ -101,8 +101,9 @@ def convert_bond_note(num):
     return data.split(".")[0]
 
 
-start_date = "2023-06-06"
+start_date = "2023-06-13"
 end_date = datetime.date.today().strftime("%Y-%m-%d")
+print(f'start_time is {start_date}')
 symbols = [
     'ES=F', 'NQ=F', 'RTY=F', 'YM=F', 'ZB=F', 'ZN=F', 'ZF=F', 'ZT=F', 'CL=F',
     'GC=F', 'SI=F', 'SPY', 'QQQ', 'IWM', 'USO', 'TLT', 'IEF', 'GLD', '^VIX',
@@ -115,31 +116,19 @@ futures = fetch_all_futures(symbols, start_date, end_date, bond_note_symbols)
 
 
 def print_dict(dictionary):
-    print('{:^15} {:^15} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10}'.format(
-        'Symbol', 'Date', 'Open', 'High', 'Low', 'Close', 'PivotHigh', 'Pivot',
-        'PivotLow',
-        'RES 1', 'SUP 1',
-        'RES 2', 'SUP 2',
-        'RES 3', 'SUP 3'))
+    print(
+        '{:^15} {:^15} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10}'
+        .format('Symbol', 'Date', 'Open', 'High', 'Low', 'Close', 'PivotHigh',
+                'Pivot', 'PivotLow', 'range', 'RES 1', 'SUP 1', 'RES 2', 'SUP 2', 'RES 3',
+                'SUP 3'))
     for key, value in dictionary.items():
         for vi, vv in value.items():
-            print('{:^15} {:^15} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10}'.format(
-                key,
-                vi,
-                vv['Open'],
-                vv['High'],
-                vv['Low'],
-                vv['Close'],
-                vv['PivotHigh'],
-                vv['PMA'],
-                vv['PivotLow'],
-                vv['RES 1'],
-                vv['SUP 1'],
-                vv['RES 2'],
-                vv['SUP 2'],
-                vv['RES 3'],
-                vv['SUP 3']
-            ))
+            print(
+                '{:^15} {:^15} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10}'
+                .format(key, vi, vv['Open'], vv['High'], vv['Low'], vv['Close'],
+                        vv['PivotHigh'], vv['PMA'], vv['PivotLow'], vv['range'], vv['RES 1'],
+                        vv['SUP 1'], vv['RES 2'], vv['SUP 2'], vv['RES 3'],
+                        vv['SUP 3']))
 
 
 print_dict(futures)

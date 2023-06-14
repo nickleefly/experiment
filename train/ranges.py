@@ -143,39 +143,43 @@ if __name__ == '__main__':
     else:
         is_monday = False
 
-    if now_utc_minus_4.hour < 17:
-        # if during market hours, use yesterday's time
-        if is_monday:
-            end_time = now_utc_minus_4.replace(
-                hour=17, minute=0, second=0, microsecond=0) - timedelta(days=3)
-        else:
-            end_time = now_utc_minus_4.replace(
-                hour=17, minute=0, second=0, microsecond=0) - timedelta(days=1)
-
-        if is_monday:
-            # if Monday, start time is previous Thursday
-            start_time = end_time.replace(hour=18, minute=0, second=0,
-                                          microsecond=0) - timedelta(days=3)
-        else:
-            # else start time is day before yesterday
-            start_time = end_time.replace(hour=18, minute=0, second=0,
-                                          microsecond=0) - timedelta(days=1)
-
-        start_time = start_time.replace(
-            hour=18, minute=0, second=0, microsecond=0)
-
+    # check if today is Saturday
+    if now_utc_minus_4.weekday() == 5:
+        is_saturday = True
     else:
-        # if after market hours, use today's time
-        end_time = now_utc_minus_4.replace(hour=17,
-                                           minute=0,
-                                           second=0,
-                                           microsecond=0)
-        start_time = end_time - timedelta(days=1)
-        start_time = start_time.replace(
-            hour=18, minute=0, second=0, microsecond=0)
+        is_saturday = False
 
-    # start_time = start_time.strftime("%Y-%m-%d")
-    # end_time = end_time.strftime("%Y-%m-%d")
+    # check if today is Sunday
+    if now_utc_minus_4.weekday() == 6:
+        is_sunday = True
+    else:
+        is_sunday = False
+
+    if is_saturday:
+        end_time = now_utc_minus_4.replace(
+            hour=17, minute=0, second=0, microsecond=0) - timedelta(days=1)
+    elif is_sunday:
+        end_time = now_utc_minus_4.replace(
+            hour=17, minute=0, second=0, microsecond=0) - timedelta(days=2)
+    else:
+        if now_utc_minus_4.hour < 17:
+            # if during market hours, use yesterday's time
+            if is_monday:
+                end_time = now_utc_minus_4.replace(
+                    hour=17, minute=0, second=0, microsecond=0) - timedelta(days=3)
+            else:
+                end_time = now_utc_minus_4.replace(
+                    hour=17, minute=0, second=0, microsecond=0) - timedelta(days=1)
+
+        else:
+            # if after market hours, use today's time
+            end_time = now_utc_minus_4.replace(hour=17,
+                                               minute=0,
+                                               second=0,
+                                               microsecond=0)
+    start_time = end_time - timedelta(days=1)
+    start_time = start_time.replace(hour=18, minute=0, second=0, microsecond=0)
+
     print(f'start_time is {start_time}, end_time is {end_time}')
 
     def get_data(start_date, end_date):
@@ -185,10 +189,7 @@ if __name__ == '__main__':
             'BTC-USD', 'USDJPY=X', 'EURUSD=X', 'AAPL', 'NFLX', 'TSLA', 'JPM',
             '^GDAXI'
         ]
-        # symbols = [
-        #   'ES=F', 'NQ=F', 'RTY=F', 'YM=F', 'ZB=F', 'ZN=F', 'ZF=F', 'ZT=F', 'CL=F',
-        #   'GC=F', 'SI=F', '^VIX', 'BTC-USD', 'USDJPY=X', 'EURUSD=X', '^GDAXI'
-        # ]
+
         bond_note_symbols = ['ZB=F', 'ZN=F', 'ZF=F', 'ZT=F']
 
         futures = fetch_all_futures(symbols, bond_note_symbols, start_date,
