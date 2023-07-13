@@ -51,6 +51,13 @@ def fetch_all_futures(symbols, start_date, end_date, bond_note_symbols):
                 S2 = convert_bond_note(S2)
                 R3 = convert_bond_note(R3)
                 S3 = convert_bond_note(S3)
+            elif (symbol == 'EURUSD=X'):
+                Open, High, Low, Close, PMA, PivotHigh, PivotLow, PR, R1, S1, R2, S2, R3, S3 = [
+                    round(val, 5) for val in [
+                        Open, High, Low, Close, PMA, PivotHigh, PivotLow, PR, R1, S1, R2,
+                        S2, R3, S3
+                    ]
+                ]
             else:
                 Open = round(Open, 2)
                 High = round(High, 2)
@@ -59,6 +66,7 @@ def fetch_all_futures(symbols, start_date, end_date, bond_note_symbols):
                 PivotHigh = round(PivotHigh, 2)
                 PMA = round(PMA, 2)
                 PivotLow = round(PivotLow, 2)
+                PR = round(PR, 2)
                 R1 = round(R1, 2)
                 S1 = round(S1, 2)
                 R2 = round(R2, 2)
@@ -101,13 +109,13 @@ def convert_bond_note(num):
     return data.split(".")[0]
 
 
-start_date = "2023-06-13"
+start_date = "2023-07-12"
 end_date = datetime.date.today().strftime("%Y-%m-%d")
 print(f'start_time is {start_date}')
 symbols = [
-    'ES=F', 'NQ=F', 'RTY=F', 'YM=F', 'ZB=F', 'ZN=F', 'ZF=F', 'ZT=F', 'CL=F',
-    'GC=F', 'SI=F', 'SPY', 'QQQ', 'IWM', 'USO', 'TLT', 'IEF', 'GLD', '^VIX',
-    'BTC-USD', 'USDJPY=X', 'EURUSD=X', 'AAPL', 'NFLX', 'TSLA', 'JPM', '^GDAXI'
+    '^VIX', 'ES=F', 'NQ=F', 'RTY=F', 'ZN=F', 'ZB=F', 'SPY', 'QQQ', 'IWM', 'YM=F',
+    'ZF=F', 'ZT=F', 'CL=F', 'GC=F', 'SI=F', 'USO', 'TLT', 'IEF', 'GLD',
+    'BTC-USD', '^GDAXI', 'USDJPY=X', 'EURUSD=X', 'AAPL', 'NFLX', 'TSLA', 'JPM'
 ]
 
 bond_note_symbols = ['ZB=F', 'ZN=F', 'ZF=F', 'ZT=F']
@@ -119,16 +127,16 @@ def print_dict(dictionary):
     print(
         '{:^15} {:^15} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10}'
         .format('Symbol', 'Date', 'Open', 'High', 'Low', 'Close', 'PivotHigh',
-                'Pivot', 'PivotLow', 'range', 'RES 1', 'SUP 1', 'RES 2', 'SUP 2', 'RES 3',
-                'SUP 3'))
+                'Pivot', 'PivotLow', 'range', 'RES 1', 'SUP 1', 'RES 2', 'SUP 2',
+                'RES 3', 'SUP 3'))
     for key, value in dictionary.items():
         for vi, vv in value.items():
             print(
                 '{:^15} {:^15} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10}'
                 .format(key, vi, vv['Open'], vv['High'], vv['Low'], vv['Close'],
-                        vv['PivotHigh'], vv['PMA'], vv['PivotLow'], vv['range'], vv['RES 1'],
-                        vv['SUP 1'], vv['RES 2'], vv['SUP 2'], vv['RES 3'],
-                        vv['SUP 3']))
+                        vv['PivotHigh'], vv['PMA'], vv['PivotLow'], vv['range'],
+                        vv['RES 1'], vv['SUP 1'], vv['RES 2'], vv['SUP 2'],
+                        vv['RES 3'], vv['SUP 3']))
 
 
 print_dict(futures)

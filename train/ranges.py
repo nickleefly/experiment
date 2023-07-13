@@ -50,9 +50,9 @@ def fetch_all_futures(symbols, bond_note_symbols, start_date, end_date):
         # If the symbol is a bond/note symbol, format the values to the appropriate format
         if symbol in bond_note_symbols:
             ohlc_values = [convert_bond_note(val) for val in ohlc_values]
-            PMA, PivotHigh, PivotLow, R1, S1, R2, S2, R3, S3 = \
+            PMA, PivotHigh, PivotLow, PR, R1, S1, R2, S2, R3, S3 = \
                 [convert_bond_note(val) for val in [
-                    PMA, PivotHigh, PivotLow, R1, S1, R2, S2, R3, S3]]
+                    PMA, PivotHigh, PivotLow, PR, R1, S1, R2, S2, R3, S3]]
         # Otherwise, round the values to two decimal places
         elif (symbol == 'EURUSD=X'):
             ohlc_values = [round(val, 5) for val in ohlc_values]
@@ -61,13 +61,16 @@ def fetch_all_futures(symbols, bond_note_symbols, start_date, end_date):
                                            PivotLow, R1, S1, R2, S2, R3, S3]]
         else:
             ohlc_values = [round(val, 2) for val in ohlc_values]
-            PMA, PivotHigh, PivotLow, R1, S1, R2, S2, R3, S3 = \
+            PMA, PivotHigh, PivotLow, PR, R1, S1, R2, S2, R3, S3 = \
                 [round(val, 2) for val in [PMA, PivotHigh,
-                                           PivotLow, R1, S1, R2, S2, R3, S3]]
+                                           PivotLow, PR, R1, S1, R2, S2, R3, S3]]
 
         # If this is the first day of data for this symbol, include the pivot range in the keys for the dictionary
         if symbol not in all_results:
-            PR = round(PR, 3)
+            if not isinstance(PR, str):
+                PR = round(PR, 3)
+            else:
+                PR = PR
             all_results[symbol] = {}
         # Add the day's data to the dictionary under the appropriate symbol and date keys
         all_results[symbol][date] = {
@@ -83,6 +86,7 @@ def fetch_all_futures(symbols, bond_note_symbols, start_date, end_date):
             "PivotHigh": PivotHigh,
             "PMA": PMA,
             "PivotLow": PivotLow,
+            "PR": PR,
             "RES 1": R1,
             "SUP 1": S1,
             "RES 2": R2,
@@ -108,18 +112,18 @@ def convert_bond_note(num):
 
 def print_dict(dictionary):
     print(
-        '{:^15} {:^15} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10}'
+        '{:^15} {:^15} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10}'
         .format('Symbol', 'Date', 'Open', 'High', 'Low', 'Close', 'PivotHigh',
-                'Pivot', 'PivotLow', 'RES 1', 'SUP 1', 'RES 2', 'SUP 2', 'RES 3',
-                'SUP 3'))
+                'Pivot', 'PivotLow', 'Range', 'RES 1', 'SUP 1', 'RES 2', 'SUP 2',
+                'RES 3', 'SUP 3'))
     for key, value in dictionary.items():
         for vi, vv in value.items():
             print(
-                '{:^15} {:^15} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10}'
+                '{:^15} {:^15} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10} {:^10}'
                 .format(key, vi, vv['Open'], vv['High'], vv['Low'], vv['Close'],
-                        vv['PivotHigh'], vv['PMA'], vv['PivotLow'], vv['RES 1'],
-                        vv['SUP 1'], vv['RES 2'], vv['SUP 2'], vv['RES 3'],
-                        vv['SUP 3']))
+                        vv['PivotHigh'], vv['PMA'], vv['PivotLow'], vv['PR'],
+                        vv['RES 1'], vv['SUP 1'], vv['RES 2'], vv['SUP 2'],
+                        vv['RES 3'], vv['SUP 3']))
 
 
 if __name__ == '__main__':
@@ -184,10 +188,10 @@ if __name__ == '__main__':
 
     def get_data(start_date, end_date):
         symbols = [
-            'ES=F', 'NQ=F', 'RTY=F', 'YM=F', 'ZB=F', 'ZN=F', 'ZF=F', 'ZT=F', 'CL=F',
-            'GC=F', 'SI=F', 'SPY', 'QQQ', 'IWM', 'USO', 'TLT', 'IEF', 'GLD', '^VIX',
-            'BTC-USD', 'USDJPY=X', 'EURUSD=X', 'AAPL', 'NFLX', 'TSLA', 'JPM',
-            '^GDAXI'
+            '^VIX', 'ES=F', 'NQ=F', 'RTY=F', 'ZN=F', 'ZB=F', 'SPY', 'QQQ', 'IWM',
+            'YM=F', 'ZF=F', 'ZT=F', 'CL=F', 'GC=F', 'SI=F', 'USO', 'TLT', 'IEF',
+            'GLD', 'BTC-USD', '^GDAXI', 'USDJPY=X', 'EURUSD=X', 'AAPL', 'NFLX',
+            'TSLA', 'JPM'
         ]
 
         bond_note_symbols = ['ZB=F', 'ZN=F', 'ZF=F', 'ZT=F']
