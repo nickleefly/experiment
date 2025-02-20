@@ -1,6 +1,6 @@
 #include "sierrachart.h"
 
-SCDLLName("ATR VWAP Trading Bot")
+SCDLLName("ATR VWMA Trading Bot")
 
 SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
 {
@@ -21,7 +21,7 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
     SCInputRef TickMoveThreshold = sc.Input[9];
     SCInputRef WaitSeconds = sc.Input[10];
     SCInputRef VolumeThreshold = sc.Input[11];
-    SCInputRef VWAPBandPeriod = sc.Input[12];
+    SCInputRef VWMAPeriod = sc.Input[12];
     SCInputRef ATRSlopePeriod = sc.Input[13];
     SCInputRef MinShortSlope = sc.Input[14];
 
@@ -47,7 +47,7 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
 
     if (sc.SetDefaults)
     {
-        sc.GraphName = "ATR VWAP Trading Bot";
+        sc.GraphName = "ATR VWMA Trading Bot";
         sc.AutoLoop = 1;
         sc.FreeDLL = 0;
 
@@ -63,7 +63,7 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
         TickMoveThreshold.Name = "Tick Move Threshold"; TickMoveThreshold.SetInt(4); TickMoveThreshold.SetIntLimits(1, 20);
         WaitSeconds.Name = "Wait Seconds"; WaitSeconds.SetInt(10); WaitSeconds.SetIntLimits(1, 60);
         VolumeThreshold.Name = "Minimum Volume Threshold"; VolumeThreshold.SetInt(100); VolumeThreshold.SetIntLimits(1, 10000);
-        VWAPBandPeriod.Name = "VWAP Band Period"; VWAPBandPeriod.SetInt(252); VWAPBandPeriod.SetIntLimits(1, 1000);
+        VWMAPeriod.Name = "VWMA Period"; VWMAPeriod.SetInt(14); VWMAPeriod.SetIntLimits(1, 1000);
         ATRSlopePeriod.Name = "ATR Slope Period"; ATRSlopePeriod.SetInt(5); ATRSlopePeriod.SetIntLimits(2, 50);
         MinShortSlope.Name = "Min Negative Slope for Shorts (degrees)"; MinShortSlope.SetFloat(-30.0f); MinShortSlope.SetFloatLimits(-90.0f, 0.0f);
 
@@ -78,27 +78,25 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
         return;
     }
 
-    // Technical calculations
     SCFloatArray TrueRange; sc.TrueRange(TrueRange);
     SCFloatArray ATR; sc.MovingAverage(TrueRange, ATR, MOVAVGTYPE_SIMPLE, ATRPeriod.GetInt());
     if (ATR[sc.Index] == 0 || ATR[sc.Index] < MinATRThreshold.GetFloat()) return;
 
-    // VWAP and Bands
-    SCFloatArray VWAP; sc.VWAP(VWAP, VWAPBandPeriod.GetInt());
-    SCFloatArray VWAPStdDev; sc.StandardDeviation(sc.Close, VWAPStdDev, VWAPBandPeriod.GetInt());
-    float VWAPValue = VWAP[sc.Index];
-    float StdDev = VWAPStdDev[sc.Index];
+    // Calculate Volume Weighted Moving Average (VWMA) and its standard deviation
+    SCFloatArray VWMA; sc.VolumeWeightedMovingAverage(sc.Close, VWMA, VWMAPeriod.GetInt());
+    SCFloatArray VWMAStdDev; sc.StdDeviation(sc.Close, VWMAStdDev, VWMAPeriod.GetInt());  // Fixed from sc.StandardDeviation
+    float VWMAValue = VWMA[sc.Index];
+    float StdDev = VWMAStdDev[sc.Index];
     
-    float VWAPBand1Lower = VWAPValue - StdDev;
-    float VWAPBand2Lower = VWAPValue - 2.0f * StdDev;
-    float VWAPBand3Lower = VWAPValue - 3.0f * StdDev;
-    float VWAPBand4Lower = VWAPValue - 4.0f * StdDev;
-    float VWAPBand1Upper = VWAPValue + StdDev;
-    float VWAPBand2Upper = VWAPValue + 2.0f * StdDev;
-    float VWAPBand3Upper = VWAPValue + 3.0f * StdDev;
-    float VWAPBand4Upper = VWAPValue + 4.0f * StdDev;
+    float VWMABand1Lower = VWMAValue - StdDev;
+    float VWMABand2Lower = VWMAValue - 2.0f * StdDev;
+    float VWMABand3Lower = VWMAValue - 3.0f * StdDev;
+    float VWMABand4Lower = VWMAValue - 4.0f * StdDev;
+    float VWMABand1Upper = VWMAValue + StdDev;
+    float VWMABand2Upper = VWMAValue + 2.0f * StdDev;
+    float VWMABand3Upper = VWMAValue + 3.0f * StdDev;
+    float VWMABand4Upper = VWMAValue + 4.0f * StdDev;
 
-    // ATR Slope Calculation
     float ATRSlope = 0.0f;
     if (sc.Index >= ATRSlopePeriod.GetInt())
     {
@@ -107,7 +105,6 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
         ATRSlope = SlopeRadians * (180.0f / 3.14159f);
     }
 
-    // Time handling
     SCDateTime CurrentTime = sc.CurrentSystemDateTime;
     double CurrentTimeSeconds = CurrentTime.GetTimeAsDouble();
     int CurrentDay = CurrentTime.GetDayOfYear();
@@ -124,17 +121,15 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
     float MiddleATR = ATR[sc.Index] * 0.5f;
     float ClosingPrice = sc.Close[sc.Index];
     float TickSize = sc.TickSize;
-    
-    // Position and account management
+
     s_SCPositionData PositionData;
     sc.GetTradePosition(PositionData);
     float AccountBalance = sc.AccountBalance;
-    
+
     float RiskPerTrade = AccountBalance * (RiskPercentage.GetFloat() / 100.0f);
     float StopDistance = ATR[sc.Index] * StopMultiplier.GetFloat();
     int PositionSize = max(1, static_cast<int>(RiskPerTrade / (StopDistance * sc.CurrencyValuePerTick)));
 
-    // Volume tracking
     float CurrentBidPrice = sc.Bid;
     float CurrentAskPrice = sc.Ask;
     int RecentBuyVolume = sc.GetRecentAskVolumeAtPrice(CurrentAskPrice);
@@ -163,7 +158,6 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
         sc.AddMessageToLog(volMessage, 0);
     }
 
-    // Check price movement and timing
     bool BuyConditionMet = false;
     bool SellConditionMet = false;
     
@@ -205,7 +199,7 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
         }
     }
 
-    // Manage exits
+    // Manage exits with detailed comments
     if (TradeActive && PositionData.PositionQuantity != 0)
     {
         int HalfSize = OriginalPositionSize / 2;
@@ -214,9 +208,10 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
         if (PositionData.PositionQuantity > 0) // Long position
         {
             float ProfitATR = ClosingPrice - EntryPrice;
-            float ProfitChannels = (ClosingPrice - VWAPValue) / StdDev;
+            float ProfitChannels = (ClosingPrice - VWMAValue) / StdDev;
 
-            // Close half at 1 ATR profit
+            // Close half of the long position when profit reaches 1 ATR
+            // This locks in profit early while letting the remaining position run
             if (!HalfClosed && ProfitATR >= ATR[sc.Index])
             {
                 s_SCNewOrder ExitOrder;
@@ -233,7 +228,8 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
                 sprintf_s(message, "Long Half Closed (1 ATR): Profit=%.2f, Price=%.4f", TradeProfit, ClosingPrice);
                 sc.AddMessageToLog(message, 0);
             }
-            // Close remaining half at 2 channels profit
+            // Close the remaining half of the long position when profit reaches 2 VWMA channels (2 standard deviations)
+            // This captures a larger move based on the shorter-term VWMA, fully exiting the trade
             else if (HalfClosed && ProfitChannels >= 2.0f)
             {
                 sc.FlattenAndCancelAllOrders();
@@ -248,16 +244,17 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
                 if (TradeProfit > 0) WinningTrades++;
                 else if (TradeProfit < 0) LosingTrades++;
                 char message[256];
-                sprintf_s(message, "Long Full Closed (2 Channels): Profit=%.2f, Price=%.4f", TradeProfit, ClosingPrice);
+                sprintf_s(message, "Long Full Closed (2 VWMA Channels): Profit=%.2f, Price=%.4f", TradeProfit, ClosingPrice);
                 sc.AddMessageToLog(message, 0);
             }
         }
         else if (PositionData.PositionQuantity < 0) // Short position
         {
             float ProfitATR = EntryPrice - ClosingPrice;
-            float ProfitChannels = (VWAPValue - ClosingPrice) / StdDev;
+            float ProfitChannels = (VWMAValue - ClosingPrice) / StdDev;
 
-            // Close half at 1 ATR profit
+            // Close half of the short position when profit reaches 1 ATR
+            // This secures early gains while keeping half active for potential further downside
             if (!HalfClosed && ProfitATR >= ATR[sc.Index])
             {
                 s_SCNewOrder ExitOrder;
@@ -274,7 +271,8 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
                 sprintf_s(message, "Short Half Closed (1 ATR): Profit=%.2f, Price=%.4f", TradeProfit, ClosingPrice);
                 sc.AddMessageToLog(message, 0);
             }
-            // Close remaining half at 2 channels profit
+            // Close the remaining half of the short position when profit reaches 2 VWMA channels
+            // This completes the trade exit after a significant downward move based on VWMA
             else if (HalfClosed && ProfitChannels >= 2.0f)
             {
                 sc.FlattenAndCancelAllOrders();
@@ -289,11 +287,13 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
                 if (TradeProfit > 0) WinningTrades++;
                 else if (TradeProfit < 0) LosingTrades++;
                 char message[256];
-                sprintf_s(message, "Short Full Closed (2 Channels): Profit=%.2f, Price=%.4f", TradeProfit, ClosingPrice);
+                sprintf_s(message, "Short Full Closed (2 VWMA Channels): Profit=%.2f, Price=%.4f", TradeProfit, ClosingPrice);
                 sc.AddMessageToLog(message, 0);
             }
         }
     }
+    // Handle closure by stop loss or target from attached orders
+    // This occurs if the market hits the predefined stop or target before reaching profit targets
     else if (TradeActive && PositionData.PositionQuantity == 0 && PositionData.LastFillOrderID != 0)
     {
         s_SCTradingOrderFillData LastFill;
@@ -317,7 +317,6 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
         }
     }
 
-    // Trading conditions
     if (!EnableTrading.GetYesNo() || 
         LastTradeBarIndex == sc.Index ||
         CurrentMinutes < StartMinutes ||
@@ -339,8 +338,7 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
     int Result = 0;
     char message[256];
     
-    // Trading logic
-    if (ClosingPrice <= VWAPBand2Lower && ClosingPrice > VWAPBand3Lower && 
+    if (ClosingPrice <= VWMABand2Lower && ClosingPrice > VWMABand3Lower && 
         ATRSlope > 30.0f && BuyConditionMet)
     {
         BuySignal[sc.Index] = ClosingPrice;
@@ -365,7 +363,7 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
             sc.AddMessageToLog(message, 1);
         }
     }
-    else if (ClosingPrice <= VWAPBand3Lower && ClosingPrice > VWAPBand4Lower && BuyConditionMet)
+    else if (ClosingPrice <= VWMABand3Lower && ClosingPrice > VWMABand4Lower && BuyConditionMet)
     {
         BuySignal[sc.Index] = ClosingPrice;
         Result = sc.BuyEntry(NewOrder);
@@ -388,7 +386,7 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
             sc.AddMessageToLog(message, 1);
         }
     }
-    else if (ClosingPrice >= VWAPBand3Upper && ClosingPrice < VWAPBand4Upper && 
+    else if (ClosingPrice >= VWMABand3Upper && ClosingPrice < VWMABand4Upper && 
              ATRSlope < MinShortSlope.GetFloat() && SellConditionMet)
     {
         SellSignal[sc.Index] = ClosingPrice;
@@ -412,7 +410,7 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
             sc.AddMessageToLog(message, 1);
         }
     }
-    else if (ClosingPrice >= VWAPBand2Upper && ClosingPrice < VWAPBand3Upper && 
+    else if (ClosingPrice >= VWMABand2Upper && ClosingPrice < VWMABand3Upper && 
              ATRSlope < MinShortSlope.GetFloat() && SellConditionMet)
     {
         SellSignal[sc.Index] = ClosingPrice;
@@ -438,7 +436,6 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
         }
     }
 
-    // Final stats
     if (sc.Index == sc.ArraySize - 1)
     {
         float WinRate = TradeCount > 0 ? (float)WinningTrades / (WinningTrades + LosingTrades) * 100.0f : 0.0f;
