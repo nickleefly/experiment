@@ -11,7 +11,7 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
     // Inputs
     SCInputRef ATRPeriod = sc.Input[0];
     SCInputRef EnableTrading = sc.Input[1];
-    SCInputRef TargetMultiplier = sc.Input[2];  // Legacy, not used
+    SCInputRef TargetMultiplier = sc.Input[2];
     SCInputRef StopMultiplier = sc.Input[3];
     SCInputRef RiskPercentage = sc.Input[4];
     SCInputRef MinATRThreshold = sc.Input[5];
@@ -54,42 +54,92 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
         sc.AutoLoop = 1;
         sc.FreeDLL = 0;
 
-        ATRPeriod.Name = "ATR Period"; ATRPeriod.SetInt(14); ATRPeriod.SetIntLimits(1, 100);
-        EnableTrading.Name = "Enable Trading"; EnableTrading.SetYesNo(0);
-        TargetMultiplier.Name = "Target ATR Multiplier (Legacy)"; TargetMultiplier.SetFloat(2.0f); TargetMultiplier.SetFloatLimits(0.1f, 10.0f);
-        StopMultiplier.Name = "Stop ATR Multiplier"; StopMultiplier.SetFloat(1.0f); StopMultiplier.SetFloatLimits(0.1f, 10.0f);
-        RiskPercentage.Name = "Risk Percentage per Trade"; RiskPercentage.SetFloat(1.0f); RiskPercentage.SetFloatLimits(0.1f, 10.0f);
-        MinATRThreshold.Name = "Minimum ATR Threshold"; MinATRThreshold.SetFloat(0.0001f); MinATRThreshold.SetFloatLimits(0.0001f, 10.0f);
-        MaxDailyLoss.Name = "Max Daily Loss Percentage"; MaxDailyLoss.SetFloat(2.0f); MaxDailyLoss.SetFloatLimits(0.1f, 20.0f);
-        TradingStartTime.Name = "Trading Start Time (HHMM)"; TradingStartTime.SetTime(HMS_TIME(9, 30, 0));
-        TradingEndTime.Name = "Trading End Time (HHMM)"; TradingEndTime.SetTime(HMS_TIME(16, 0, 0));
-        TickMoveThreshold.Name = "Tick Move Threshold"; TickMoveThreshold.SetInt(4); TickMoveThreshold.SetIntLimits(1, 20);
-        WaitSeconds.Name = "Wait Seconds"; WaitSeconds.SetInt(10); WaitSeconds.SetIntLimits(1, 60);
-        VolumeThreshold.Name = "Minimum Volume Threshold"; VolumeThreshold.SetInt(100); VolumeThreshold.SetIntLimits(1, 10000);
-        VWMAPeriod.Name = "VWMA Period"; VWMAPeriod.SetInt(14); VWMAPeriod.SetIntLimits(1, 1000);
-        ATRSlopePeriod.Name = "ATR Slope Period"; ATRSlopePeriod.SetInt(5); ATRSlopePeriod.SetIntLimits(2, 50);
-        MinShortSlope.Name = "Min Negative Slope for Shorts (degrees)"; MinShortSlope.SetFloat(-30.0f); MinShortSlope.SetFloatLimits(-90.0f, 0.0f);
-        FirstTargetATR.Name = "First Target ATR (1 or 2)"; FirstTargetATR.SetInt(1); FirstTargetATR.SetIntLimits(1, 2);
-        SecondTargetATR.Name = "Second Target ATR (2, 3, or 4)"; SecondTargetATR.SetInt(2); SecondTargetATR.SetIntLimits(2, 4);
+        ATRPeriod.Name = "ATR Period";
+        ATRPeriod.SetInt(14);
+        ATRPeriod.SetIntLimits(1, 100);
+        EnableTrading.Name = "Enable Trading";
+        EnableTrading.SetYesNo(0);
+        TargetMultiplier.Name = "Target ATR Multiplier (Legacy)";
+        TargetMultiplier.SetFloat(2.0f);
+        TargetMultiplier.SetFloatLimits(0.1f, 10.0f);
+        StopMultiplier.Name = "Stop ATR Multiplier";
+        StopMultiplier.SetFloat(1.0f);
+        StopMultiplier.SetFloatLimits(0.1f, 10.0f);
+        RiskPercentage.Name = "Risk Percentage per Trade";
+        RiskPercentage.SetFloat(1.0f);
+        RiskPercentage.SetFloatLimits(0.1f, 10.0f);
+        MinATRThreshold.Name = "Minimum ATR Threshold";
+        MinATRThreshold.SetFloat(0.0001f);
+        MinATRThreshold.SetFloatLimits(0.0001f, 10.0f);
+        MaxDailyLoss.Name = "Max Daily Loss Percentage";
+        MaxDailyLoss.SetFloat(2.0f);
+        MaxDailyLoss.SetFloatLimits(0.1f, 20.0f);
+        TradingStartTime.Name = "Trading Start Time (HHMM)";
+        TradingStartTime.SetTime(HMS_TIME(9, 30, 0));
+        TradingEndTime.Name = "Trading End Time (HHMM)";
+        TradingEndTime.SetTime(HMS_TIME(16, 0, 0));
+        TickMoveThreshold.Name = "Tick Move Threshold";
+        TickMoveThreshold.SetInt(4);
+        TickMoveThreshold.SetIntLimits(1, 20);
+        WaitSeconds.Name = "Wait Seconds";
+        WaitSeconds.SetInt(10);
+        WaitSeconds.SetIntLimits(1, 60);
+        VolumeThreshold.Name = "Minimum Volume Threshold";
+        VolumeThreshold.SetInt(100);
+        VolumeThreshold.SetIntLimits(1, 10000);
+        VWMAPeriod.Name = "VWMA Period";
+        VWMAPeriod.SetInt(14);
+        VWMAPeriod.SetIntLimits(1, 1000);
+        ATRSlopePeriod.Name = "ATR Slope Period";
+        ATRSlopePeriod.SetInt(5);
+        ATRSlopePeriod.SetIntLimits(2, 50);
+        MinShortSlope.Name = "Min Negative Slope for Shorts (degrees)";
+        MinShortSlope.SetFloat(-30.0f);
+        MinShortSlope.SetFloatLimits(-90.0f, 0.0f);
+        FirstTargetATR.Name = "First Target ATR (1 or 2)";
+        FirstTargetATR.SetInt(1);
+        FirstTargetATR.SetIntLimits(1, 2);
+        SecondTargetATR.Name = "Second Target ATR (2, 3, or 4)";
+        SecondTargetATR.SetInt(2);
+        SecondTargetATR.SetIntLimits(2, 4);
 
-        BuySignal.Name = "Buy Signal"; BuySignal.DrawStyle = DRAWSTYLE_ARROW_UP; BuySignal.PrimaryColor = RGB(0, 255, 0); BuySignal.LineWidth = 2;
-        SellSignal.Name = "Sell Signal"; SellSignal.DrawStyle = DRAWSTYLE_ARROW_DOWN; SellSignal.PrimaryColor = RGB(255, 0, 0); SellSignal.LineWidth = 2;
+        BuySignal.Name = "Buy Signal";
+        BuySignal.DrawStyle = DRAWSTYLE_ARROW_UP;
+        BuySignal.PrimaryColor = RGB(0, 255, 0);
+        BuySignal.LineWidth = 2;
+        SellSignal.Name = "Sell Signal";
+        SellSignal.DrawStyle = DRAWSTYLE_ARROW_DOWN;
+        SellSignal.PrimaryColor = RGB(255, 0, 0);
+        SellSignal.LineWidth = 2;
 
-        TotalProfit = 0.0f; WinningTrades = 0; LosingTrades = 0; MaxDrawdown = 0.0f; PeakEquity = 0.0f;
-        LastBuyPrice = 0.0f; LastSellPrice = 0.0f; LastBuyTime = 0.0; LastSellTime = 0.0;
-        BuyVolumeTrigger = 0; SellVolumeTrigger = 0;
-        OriginalPositionSize = 0; HalfClosed = 0;
+        TotalProfit = 0.0f;
+        WinningTrades = 0;
+        LosingTrades = 0;
+        MaxDrawdown = 0.0f;
+        PeakEquity = 0.0f;
+        LastBuyPrice = 0.0f;
+        LastSellPrice = 0.0f;
+        LastBuyTime = 0.0;
+        LastSellTime = 0.0;
+        BuyVolumeTrigger = 0;
+        SellVolumeTrigger = 0;
+        OriginalPositionSize = 0;
+        HalfClosed = 0;
         TradeType = 0;
 
         return;
     }
 
-    SCFloatArray TrueRange; sc.TrueRange(TrueRange);
-    SCFloatArray ATR; sc.MovingAverage(TrueRange, ATR, MOVAVGTYPE_SIMPLE, MOVAVGTYPE_SIMPLE, ATRPeriod.GetInt());
+    SCFloatArray TrueRange;
+    sc.TrueRange(TrueRange);
+    SCFloatArray ATR;
+    sc.MovingAverage(TrueRange, ATR, MOVAVGTYPE_SIMPLE, MOVAVGTYPE_SIMPLE, ATRPeriod.GetInt());
     if (ATR[sc.Index] == 0 || ATR[sc.Index] < MinATRThreshold.GetFloat()) return;
 
-    SCFloatArray VWMA; sc.VolumeWeightedMovingAverage(sc.Close, VWMA, VWMAPeriod.GetInt());
-    SCFloatArray VWMAStdDev; sc.StdDeviation(sc.Close, VWMAStdDev, VWMAPeriod.GetInt());
+    SCFloatArray VWMA;
+    sc.VolumeWeightedMovingAverage(sc.Close, VWMA, VWMAPeriod.GetInt());
+    SCFloatArray VWMAStdDev;
+    sc.StdDeviation(sc.Close, VWMAStdDev, VWMAPeriod.GetInt());
     float VWMAValue = VWMA[sc.Index];
     float StdDev = VWMAStdDev[sc.Index];
     
