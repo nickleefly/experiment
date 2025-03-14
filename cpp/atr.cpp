@@ -46,7 +46,8 @@ SCSFExport scsf_ATRBasedTradingBotEnhancedPlus(SCStudyInterfaceRef sc)
     SCPersistentInt& SellVolumeTrigger = sc.PersistVars->i8;
     SCPersistentInt& OriginalPositionSize = sc.PersistVars->i9;
     SCPersistentInt& HalfClosed = sc.PersistVars->i10;
-    SCPersistentInt& TradeType = sc.PersistVars->i11;  // Trade type: 1 = crossing long, 2 = crossing short, 3 = ATR bottom, 4 = ATR top, 5 = slope long, 6 = slope short
+    SCPersistentInt& TradeType = sc.PersistVars->i11;
+    // Trade type: 1 = crossing long, 2 = crossing short, 3 = ATR bottom, 4 = ATR top, 5 = slope long, 6 = slope short
 
     if (sc.SetDefaults)
     {
