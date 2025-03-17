@@ -1,12 +1,14 @@
 #include "sierrachart.h"
 
-SCDLLName("Volume Trading Bot")
+SCDLLName("Volume Spike Trading Bot")
 
 SCSFExport scsf_VolumeBasedTradingBot(SCStudyInterfaceRef sc)
 {
     // Subgraphs
     SCSubgraphRef BuySignal = sc.Subgraph[0];
     SCSubgraphRef SellSignal = sc.Subgraph[1];
+    SCSubgraphRef VolumeTriggerLong = sc.Subgraph[2];
+    SCSubgraphRef VolumeTriggerShort = sc.Subgraph[3];
     
     // Inputs
     SCInputRef EnableTrading = sc.Input[0];
@@ -17,11 +19,10 @@ SCSFExport scsf_VolumeBasedTradingBot(SCStudyInterfaceRef sc)
     SCInputRef TradingStartTime = sc.Input[5];
     SCInputRef TradingEndTime = sc.Input[6];
     SCInputRef TickMoveThreshold = sc.Input[7];
-    SCInputRef WaitSeconds = sc.Input[8];
-    SCInputRef VolumeThreshold = sc.Input[9];
-    SCInputRef FirstTargetMultiplier = sc.Input[10];
-    SCInputRef SecondTargetMultiplier = sc.Input[11];
-
+    SCInputRef VolumeThreshold = sc.Input[8];
+    SCInputRef FirstTargetMultiplier = sc.Input[9];
+    SCInputRef SecondTargetMultiplier = sc.Input[10];
+    
     // Persistent variables
     SCPersistentInt& LastTradeBarIndex = sc.PersistVars->i1;
     SCPersistentInt& TradeActive = sc.PersistVars->i2;
@@ -35,8 +36,6 @@ SCSFExport scsf_VolumeBasedTradingBot(SCStudyInterfaceRef sc)
     SCPersistentFloat& PeakEquity = sc.PersistVars->f7;
     SCPersistentFloat& LastBuyPrice = sc.PersistVars->f8;
     SCPersistentFloat& LastSellPrice = sc.PersistVars->f9;
-    SCPersistentDouble& LastBuyTime = sc.PersistVars->d1;
-    SCPersistentDouble& LastSellTime = sc.PersistVars->d2;
     SCPersistentInt& BuyVolumeTrigger = sc.PersistVars->i7;
     SCPersistentInt& SellVolumeTrigger = sc.PersistVars->i8;
     SCPersistentInt& OriginalPositionSize = sc.PersistVars->i9;
@@ -44,7 +43,7 @@ SCSFExport scsf_VolumeBasedTradingBot(SCStudyInterfaceRef sc)
 
     if (sc.SetDefaults)
     {
-        sc.GraphName = "Volume Based Trading Bot";
+        sc.GraphName = "Volume Spike Trading Bot";
         sc.AutoLoop = 1;
         sc.FreeDLL = 0;
 
@@ -67,11 +66,8 @@ SCSFExport scsf_VolumeBasedTradingBot(SCStudyInterfaceRef sc)
         TradingEndTime.Name = "Trading End Time (HHMM)";
         TradingEndTime.SetTime(HMS_TIME(16, 0, 0));
         TickMoveThreshold.Name = "Tick Move Threshold";
-        TickMoveThreshold.SetInt(4);
+        TickMoveThreshold.SetInt(3);  // Default to 3 ticks as requested
         TickMoveThreshold.SetIntLimits(1, 20);
-        WaitSeconds.Name = "Wait Seconds";
-        WaitSeconds.SetInt(10);
-        WaitSeconds.SetIntLimits(1, 60);
         VolumeThreshold.Name = "Minimum Volume Threshold";
         VolumeThreshold.SetInt(100);
         VolumeThreshold.SetIntLimits(1, 10000);
@@ -86,10 +82,21 @@ SCSFExport scsf_VolumeBasedTradingBot(SCStudyInterfaceRef sc)
         BuySignal.DrawStyle = DRAWSTYLE_ARROW_UP;
         BuySignal.PrimaryColor = RGB(0, 255, 0);
         BuySignal.LineWidth = 2;
+        
         SellSignal.Name = "Sell Signal";
         SellSignal.DrawStyle = DRAWSTYLE_ARROW_DOWN;
         SellSignal.PrimaryColor = RGB(255, 0, 0);
         SellSignal.LineWidth = 2;
+        
+        VolumeTriggerLong.Name = "Volume Trigger Long";
+        VolumeTriggerLong.DrawStyle = DRAWSTYLE_DASH;
+        VolumeTriggerLong.PrimaryColor = RGB(0, 200, 200);
+        VolumeTriggerLong.LineWidth = 1;
+        
+        VolumeTriggerShort.Name = "Volume Trigger Short";
+        VolumeTriggerShort.DrawStyle = DRAWSTYLE_DASH;
+        VolumeTriggerShort.PrimaryColor = RGB(200, 0, 200);
+        VolumeTriggerShort.LineWidth = 1;
 
         TotalProfit = 0.0f;
         WinningTrades = 0;
@@ -98,8 +105,6 @@ SCSFExport scsf_VolumeBasedTradingBot(SCStudyInterfaceRef sc)
         PeakEquity = 0.0f;
         LastBuyPrice = 0.0f;
         LastSellPrice = 0.0f;
-        LastBuyTime = 0.0;
-        LastSellTime = 0.0;
         BuyVolumeTrigger = 0;
         SellVolumeTrigger = 0;
         OriginalPositionSize = 0;
@@ -121,7 +126,6 @@ SCSFExport scsf_VolumeBasedTradingBot(SCStudyInterfaceRef sc)
     if (AvgRange < 0.0001f) return;
 
     SCDateTime CurrentTime = sc.CurrentSystemDateTime;
-    double CurrentTimeSeconds = CurrentTime.GetTimeAsDouble();
     int CurrentDay = CurrentTime.GetDayOfYear();
     int CurrentMinutes = CurrentTime.GetHour() * 60 + CurrentTime.GetMinute();
     int StartMinutes = HM_TIME_TO_MINUTES(TradingStartTime.GetTime());
@@ -149,70 +153,71 @@ SCSFExport scsf_VolumeBasedTradingBot(SCStudyInterfaceRef sc)
     int RecentBuyVolume = sc.GetRecentAskVolumeAtPrice(CurrentAskPrice);
     int RecentSellVolume = sc.GetRecentBidVolumeAtPrice(CurrentBidPrice);
 
+    // Clear previous volume trigger markers
+    VolumeTriggerLong[sc.Index] = 0;
+    VolumeTriggerShort[sc.Index] = 0;
+
     char volMessage[256];
     sprintf_s(volMessage, "BidVol=%d at %.4f, AskVol=%d at %.4f", 
              RecentSellVolume, CurrentBidPrice, RecentBuyVolume, CurrentAskPrice);
     sc.AddMessageToLog(volMessage, 0);
 
-    // Track volume triggers
-    if (RecentBuyVolume >= VolumeThreshold.GetInt() && LastBuyPrice == 0.0f)
+    // Track volume triggers - more efficient detection
+    if (RecentBuyVolume >= VolumeThreshold.GetInt())
     {
         LastBuyPrice = CurrentAskPrice;
-        LastBuyTime = CurrentTimeSeconds;
         BuyVolumeTrigger = 1;
+        VolumeTriggerLong[sc.Index] = ClosingPrice;
         sprintf_s(volMessage, "Buy Volume Triggered: %d at %.4f", RecentBuyVolume, LastBuyPrice);
         sc.AddMessageToLog(volMessage, 0);
     }
     
-    if (RecentSellVolume >= VolumeThreshold.GetInt() && LastSellPrice == 0.0f)
+    if (RecentSellVolume >= VolumeThreshold.GetInt())
     {
         LastSellPrice = CurrentBidPrice;
-        LastSellTime = CurrentTimeSeconds;
         SellVolumeTrigger = 1;
+        VolumeTriggerShort[sc.Index] = ClosingPrice;
         sprintf_s(volMessage, "Sell Volume Triggered: %d at %.4f", RecentSellVolume, LastSellPrice);
         sc.AddMessageToLog(volMessage, 0);
     }
 
+    // Immediate entry checks - just need required price movement of 3 ticks
     bool BuyConditionMet = false;
     bool SellConditionMet = false;
     
-    // Check if buy volume trigger meets entry criteria
     if (BuyVolumeTrigger)
     {
         float PriceMoveUp = ClosingPrice - LastBuyPrice;
         if (PriceMoveUp >= TickMoveThreshold.GetInt() * TickSize)
         {
-            double TimeElapsed = CurrentTimeSeconds - LastBuyTime;
-            if (TimeElapsed >= WaitSeconds.GetInt())
-            {
-                BuyConditionMet = true;
-            }
+            BuyConditionMet = true;
+            sprintf_s(volMessage, "Buy Condition Met: %.4f moved %.4f from %.4f", 
+                    ClosingPrice, PriceMoveUp, LastBuyPrice);
+            sc.AddMessageToLog(volMessage, 0);
         }
-        else if (PriceMoveUp <= 0)
+        else if (PriceMoveUp <= -TickSize)  // Reset if price moves against by 1 tick
         {
             LastBuyPrice = 0.0f;
             BuyVolumeTrigger = 0;
-            sc.AddMessageToLog("Buy Trigger Reset: Price Returned", 0);
+            sc.AddMessageToLog("Buy Trigger Reset: Price Reversed", 0);
         }
     }
 
-    // Check if sell volume trigger meets entry criteria
     if (SellVolumeTrigger)
     {
         float PriceMoveDown = LastSellPrice - ClosingPrice;
         if (PriceMoveDown >= TickMoveThreshold.GetInt() * TickSize)
         {
-            double TimeElapsed = CurrentTimeSeconds - LastSellTime;
-            if (TimeElapsed >= WaitSeconds.GetInt())
-            {
-                SellConditionMet = true;
-            }
+            SellConditionMet = true;
+            sprintf_s(volMessage, "Sell Condition Met: %.4f moved %.4f from %.4f", 
+                    ClosingPrice, PriceMoveDown, LastSellPrice);
+            sc.AddMessageToLog(volMessage, 0);
         }
-        else if (PriceMoveDown <= 0)
+        else if (PriceMoveDown <= -TickSize)  // Reset if price moves against by 1 tick
         {
             LastSellPrice = 0.0f;
             SellVolumeTrigger = 0;
-            sc.AddMessageToLog("Sell Trigger Reset: Price Returned", 0);
+            sc.AddMessageToLog("Sell Trigger Reset: Price Reversed", 0);
         }
     }
 
